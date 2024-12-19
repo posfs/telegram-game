@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимац��и
+        // Параметры анимации
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -182,7 +182,7 @@ class Game {
             }
         });
         
-        // Обновление пуль и проверка столкновений
+        // Обновление пу��ь и проверка столкновений
         this.bullets.forEach((bullet, bulletIndex) => {
             bullet.y -= bullet.speed;
             
@@ -369,24 +369,13 @@ class Game {
         this.gameOver = true;
         
         if (this.tg) {
-            console.log('Игра окончена, отправка счета:', this.score);
+            const scoreToSend = this.score.toString();
+            console.log('Отправка счета в Telegram:', scoreToSend);
             
             try {
-                // Отправляем данные сразу
-                this.tg.sendData(this.score.toString());
-                
-                // Настраиваем кнопку для закрытия игры
-                this.tg.MainButton.setParams({
-                    text: 'Закрыть игру',
-                    color: '#2cab37',
-                    text_color: '#ffffff'
-                });
-                
-                this.tg.MainButton.onClick(() => {
-                    this.tg.close();
-                });
-                
-                this.tg.MainButton.show();
+                // Отправляем данные напрямую
+                this.tg.sendData(scoreToSend);
+                console.log('Данные успешно отправлены');
                 
                 // Показываем сообщение
                 const gameOverMessage = document.createElement('div');
@@ -402,12 +391,19 @@ class Game {
                     text-align: center;
                     z-index: 1000;
                 `;
-                gameOverMessage.innerHTML = `Игра окончена!<br>Ваш счет: ${this.score}<br>Результат сохранен.`;
+                gameOverMessage.innerHTML = `Игра окончена!<br>Ваш счет: ${this.score}`;
                 document.body.appendChild(gameOverMessage);
                 
+                // Закрываем игру через небольшую задержку
+                setTimeout(() => {
+                    this.tg.close();
+                }, 1000);
+                
             } catch (e) {
-                console.error('Ошибка при завершении игры:', e);
+                console.error('Ошибка при отправке данных:', e);
             }
+        } else {
+            console.error('Telegram WebApp не инициализирован');
         }
     }
 }
