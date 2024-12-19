@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимации
+        // Параметры анимац��и
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -182,7 +182,7 @@ class Game {
             }
         });
         
-        // Обновление пу��ь и проверка столкновений
+        // Обновление пуль и проверка столкновений
         this.bullets.forEach((bullet, bulletIndex) => {
             bullet.y -= bullet.speed;
             
@@ -211,28 +211,18 @@ class Game {
         });
         
         // Проверка столкновения игрока с врагами
-        this.enemies.forEach((enemy, index) => {
-            if (this.checkCollision(this.player, enemy)) {
-                this.gameOver = true;
-                // Отправляем результат в бот
-                this.sendScore();
+        this.enemies.forEach(enemy => {
+            if (this.checkCollision(this.player, enemy) && !this.gameOver) {
+                this.endGame();
             }
         });
     }
     
     checkCollision(rect1, rect2) {
-        if (rect1.x < rect2.x + rect2.width &&
+        return rect1.x < rect2.x + rect2.width &&
             rect1.x + rect1.width > rect2.x &&
             rect1.y < rect2.y + rect2.height &&
-            rect1.y + rect1.height > rect2.y) {
-            
-            if (!this.gameOver) {
-                this.endGame();
-                this.gameOver = true;
-            }
-            return true;
-        }
-        return false;
+            rect1.y + rect1.height > rect2.y;
     }
     
     addExplosion(x, y) {
@@ -376,31 +366,29 @@ class Game {
     }
     
     endGame() {
-        // Останавливаем игру
         this.gameOver = true;
         
         if (this.tg) {
             console.log('Игра окончена, отправка счета:', this.score);
             
             try {
-                // Создаем и показываем кно��ку завершения
+                // Отправляем данные сразу
+                this.tg.sendData(this.score.toString());
+                
+                // Настраиваем кнопку для закрытия игры
                 this.tg.MainButton.setParams({
-                    text: 'Сохранить результат: ' + this.score,
+                    text: 'Закрыть игру',
                     color: '#2cab37',
                     text_color: '#ffffff'
                 });
                 
                 this.tg.MainButton.onClick(() => {
-                    try {
-                        this.tg.sendData(this.score.toString());
-                    } catch (e) {
-                        console.error('Ошибка при отправке данных:', e);
-                    }
+                    this.tg.close();
                 });
                 
                 this.tg.MainButton.show();
                 
-                // Показываем сообщение без использования alert
+                // Показываем сообщение
                 const gameOverMessage = document.createElement('div');
                 gameOverMessage.style.cssText = `
                     position: absolute;
@@ -414,14 +402,12 @@ class Game {
                     text-align: center;
                     z-index: 1000;
                 `;
-                gameOverMessage.innerHTML = `Игр�� окончена!<br>Ваш счет: ${this.score}<br>Нажмите кнопку внизу, чтобы сохранить результат.`;
+                gameOverMessage.innerHTML = `Игра окончена!<br>Ваш счет: ${this.score}<br>Результат сохранен.`;
                 document.body.appendChild(gameOverMessage);
                 
             } catch (e) {
                 console.error('Ошибка при завершении игры:', e);
             }
-        } else {
-            console.error('Telegram WebApp не инициализирован');
         }
     }
 }
