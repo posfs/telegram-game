@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимации
+        // Параметры анимац��и
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -46,6 +46,9 @@ class Game {
         };
         
         this.playerTilt = 0; // Добавляем наклон при движении
+        
+        // Добавляем обработчик для кнопки выхода
+        this.setupExitButton();
     }
     
     setupControls() {
@@ -316,6 +319,17 @@ class Game {
         this.update();
         this.draw();
         requestAnimationFrame(() => this.gameLoop());
+    }
+    
+    setupExitButton() {
+        const exitButton = document.getElementById('exitButton');
+        exitButton.addEventListener('click', () => {
+            if (window.Telegram.WebApp.isExpanded) {
+                window.Telegram.WebApp.close();
+            } else {
+                window.close();
+            }
+        });
     }
 }
 
