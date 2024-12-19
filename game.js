@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимац��и
+        // Параметры анимации
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -56,6 +56,13 @@ class Game {
                 window.Telegram.WebApp.sendData(this.score.toString());
             }
         });
+        
+        // Добавляем Telegram Web App
+        this.tg = window.Telegram.WebApp;
+        this.tg.expand();
+        
+        // Флаг для определения конца игры
+        this.gameOver = false;
     }
     
     setupControls() {
@@ -199,6 +206,15 @@ class Game {
         this.explosions = this.explosions.filter(particles => {
             return particles.some(p => p.life > 0);
         });
+        
+        // Проверка столкновения игрока с врагами
+        this.enemies.forEach((enemy, index) => {
+            if (this.checkCollision(this.player, enemy)) {
+                this.gameOver = true;
+                // Отправляем результат в бот
+                this.sendScore();
+            }
+        });
     }
     
     checkCollision(rect1, rect2) {
@@ -322,10 +338,12 @@ class Game {
     }
     
     gameLoop() {
-        this.spawnEnemy();
-        this.update();
-        this.draw();
-        requestAnimationFrame(() => this.gameLoop());
+        if (!this.gameOver) {
+            this.spawnEnemy();
+            this.update();
+            this.draw();
+            requestAnimationFrame(() => this.gameLoop());
+        }
     }
     
     setupExitButton() {
@@ -344,6 +362,16 @@ class Game {
                 }, 100); // Небольшая задержка для гарантии отправки данных
             }
         });
+    }
+    
+    // Добавляем новый метод для отправки счета
+    sendScore() {
+        if (this.gameOver) {
+            // Отправляем счет обратно в бот
+            this.tg.sendData(this.score.toString());
+            // Закрываем мини-приложение
+            this.tg.close();
+        }
     }
 }
 
