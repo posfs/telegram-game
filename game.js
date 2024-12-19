@@ -1,3 +1,7 @@
+// Инициализация Telegram Web App
+const tg = window.Telegram.WebApp;
+tg.expand(); // Развернуть на весь экран
+
 class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
@@ -51,20 +55,50 @@ class Game {
             const rect = this.canvas.getBoundingClientRect();
             const newX = touch.clientX - rect.left - this.player.width / 2;
             
-            // Добавляем наклон при движении
             this.playerTilt = (newX - this.player.x) * 0.1;
             this.playerTilt = Math.max(Math.min(this.playerTilt, Math.PI/6), -Math.PI/6);
             
-            this.player.x = newX;
+            this.player.x = Math.max(0, Math.min(newX, this.canvas.width - this.player.width));
         });
         
-        // Возвращаем корабль в нормальное положение
+        // Управление мышью
+        this.canvas.addEventListener('mousemove', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const newX = e.clientX - rect.left - this.player.width / 2;
+            
+            this.playerTilt = (newX - this.player.x) * 0.1;
+            this.playerTilt = Math.max(Math.min(this.playerTilt, Math.PI/6), -Math.PI/6);
+            
+            this.player.x = Math.max(0, Math.min(newX, this.canvas.width - this.player.width));
+        });
+        
+        // Управление клавиатурой
+        this.keys = {};
+        document.addEventListener('keydown', (e) => {
+            this.keys[e.key] = true;
+            
+            // Стрельба на пробел
+            if (e.key === ' ') {
+                this.shoot();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            this.keys[e.key] = false;
+        });
+        
+        // Стрельба по клику
+        this.canvas.addEventListener('click', () => {
+            this.shoot();
+        });
+        
+        // Сброс наклона
         this.canvas.addEventListener('touchend', () => {
             this.playerTilt = 0;
         });
         
-        this.canvas.addEventListener('click', () => {
-            this.shoot();
+        this.canvas.addEventListener('mouseout', () => {
+            this.playerTilt = 0;
         });
     }
     
@@ -107,6 +141,19 @@ class Game {
     }
     
     update() {
+        // Добавьте в начало метода update():
+        if (this.keys['ArrowLeft'] || this.keys['a']) {
+            this.player.x -= this.player.speed;
+            this.playerTilt = -Math.PI/12;
+        }
+        if (this.keys['ArrowRight'] || this.keys['d']) {
+            this.player.x += this.player.speed;
+            this.playerTilt = Math.PI/12;
+        }
+        
+        // Ограничение движения игрока
+        this.player.x = Math.max(0, Math.min(this.player.x, this.canvas.width - this.player.width));
+        
         // Обновление врагов
         this.enemies.forEach((enemy, index) => {
             enemy.y += enemy.speed;
