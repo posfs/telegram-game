@@ -49,6 +49,13 @@ class Game {
         
         // Добавляем обработчик для кнопки выхода
         this.setupExitButton();
+        
+        // Добавляем обработчик закрытия окна
+        window.addEventListener('beforeunload', () => {
+            if (this.score > 0 && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(this.score.toString());
+            }
+        });
     }
     
     setupControls() {
@@ -324,10 +331,17 @@ class Game {
     setupExitButton() {
         const exitButton = document.getElementById('exitButton');
         exitButton.addEventListener('click', () => {
-            if (window.Telegram.WebApp.isExpanded) {
-                window.Telegram.WebApp.close();
-            } else {
-                window.close();
+            // Отправляем счет перед закрытием
+            if (window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(this.score.toString());
+                
+                setTimeout(() => {
+                    if (window.Telegram.WebApp.isExpanded) {
+                        window.Telegram.WebApp.close();
+                    } else {
+                        window.close();
+                    }
+                }, 100); // Небольшая задержка для гарантии отправки данных
             }
         });
     }
