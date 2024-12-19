@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимации
+        // Параметры анимац��и
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -57,11 +57,14 @@ class Game {
             }
         });
         
-        // Добавляем Telegram Web App
+        // Инициализация Telegram Web App
         this.tg = window.Telegram.WebApp;
+        if (!this.tg) {
+            console.error('Telegram WebApp не найден!');
+        }
         this.tg.expand();
         
-        // Флаг для определения конца игры
+        // Добавляем обработчик столкновений
         this.gameOver = false;
     }
     
@@ -218,10 +221,18 @@ class Game {
     }
     
     checkCollision(rect1, rect2) {
-        return rect1.x < rect2.x + rect2.width &&
-               rect1.x + rect1.width > rect2.x &&
-               rect1.y < rect2.y + rect2.height &&
-               rect1.y + rect1.height > rect2.y;
+        if (rect1.x < rect2.x + rect2.width &&
+            rect1.x + rect1.width > rect2.x &&
+            rect1.y < rect2.y + rect2.height &&
+            rect1.y + rect1.height > rect2.y) {
+            
+            if (!this.gameOver) {
+                this.gameOver = true;
+                this.endGame();
+            }
+            return true;
+        }
+        return false;
     }
     
     addExplosion(x, y) {
@@ -364,18 +375,31 @@ class Game {
         });
     }
     
-    // Добавляем новый метод для отправки счета
-    sendScore() {
-        if (this.gameOver) {
-            // Отправляем счет обратно в бот
-            this.tg.sendData(this.score.toString());
-            // Закрываем мини-приложение
-            this.tg.close();
+    endGame() {
+        if (this.tg) {
+            console.log('Игра окончена, отправка счета:', this.score);
+            
+            // Используем MainButton для надежности
+            this.tg.MainButton.setText('Сохранить результат: ' + this.score);
+            this.tg.MainButton.show();
+            this.tg.MainButton.onClick(() => {
+                this.tg.sendData(this.score.toString());
+                this.tg.close();
+            });
+            
+            // Показываем сообщение игроку
+            alert('Игра окончена! Ваш счет: ' + this.score + '\nНажмите кнопку внизу, чтобы сохранить результат.');
+        } else {
+            console.error('Telegram WebApp не инициализирован');
         }
     }
 }
 
-// Запуск игры
+// Инициализация игры
 window.onload = () => {
-    new Game();
+    if (window.Telegram.WebApp) {
+        new Game();
+    } else {
+        alert('Эта игра работает только в Telegram!');
+    }
 }; 
