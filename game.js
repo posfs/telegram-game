@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимац��и
+        // Параметры анимации
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -370,18 +370,12 @@ class Game {
         
         if (this.tg) {
             const scoreToSend = this.score.toString();
-            console.log('Отправка счета в Telegram:', scoreToSend);
+            console.log('Попытка отправки счета:', scoreToSend);
             
             try {
-                // Добавляем обработчик для проверки успешной отправки
-                this.tg.onEvent('mainButtonClicked', () => {
-                    console.log('Отправка данных через MainButton');
-                    this.tg.sendData(scoreToSend);
-                });
-
-                // Настраиваем и показываем кнопку
-                this.tg.MainButton.setText('Сохранить результат: ' + scoreToSend);
-                this.tg.MainButton.show();
+                // Сначала пробуем отправить напрямую
+                this.tg.sendData(scoreToSend);
+                console.log('Данные отправлены напрямую');
                 
                 // Показываем сообщение
                 const gameOverMessage = document.createElement('div');
@@ -397,8 +391,29 @@ class Game {
                     text-align: center;
                     z-index: 1000;
                 `;
-                gameOverMessage.innerHTML = `Игра окончена!<br>Ваш счет: ${this.score}<br>Нажмите кнопку внизу, чтобы сохранить результат`;
+                gameOverMessage.innerHTML = `
+                    Игра окончена!<br>
+                    Ваш счет: ${this.score}<br>
+                    Подождите, результат сохраняется...
+                `;
                 document.body.appendChild(gameOverMessage);
+                
+                // Даем время на отправку данных
+                setTimeout(() => {
+                    // Повторная попытка отправки через MainButton
+                    this.tg.MainButton.setText('Закрыть игру');
+                    this.tg.MainButton.onClick(() => {
+                        console.log('Закрытие игры');
+                        this.tg.close();
+                    });
+                    this.tg.MainButton.show();
+                    
+                    gameOverMessage.innerHTML = `
+                        Игра окончена!<br>
+                        Ваш счет: ${this.score}<br>
+                        Результат сохранен
+                    `;
+                }, 1000);
                 
             } catch (e) {
                 console.error('Ошибка при отправке данных:', e);
