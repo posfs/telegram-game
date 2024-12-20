@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимации
+        // Параметры анимац��и
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -207,6 +207,17 @@ class Game {
         
         // Обновление взрывов
         this.explosions = this.explosions.filter(particles => {
+            particles.forEach(particle => {
+                // Обновляем позицию частиц
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                // Уменьшаем время жизни частиц
+                particle.life -= 0.02;
+                // Добавляем замедление частиц
+                particle.vx *= 0.98;
+                particle.vy *= 0.98;
+            });
+            // Оставляем только те группы частиц, где есть живые частицы
             return particles.some(p => p.life > 0);
         });
         
