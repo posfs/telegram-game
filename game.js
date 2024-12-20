@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимац��и
+        // Параметры анимации
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -66,6 +66,11 @@ class Game {
         
         // Добавляем обработчик столкновений
         this.gameOver = false;
+        
+        this.nickname = localStorage.getItem('nickname');
+        if (!this.nickname) {
+            this.showRegistration();
+        }
     }
     
     setupControls() {
@@ -381,11 +386,9 @@ class Game {
         
         if (window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
-            const scoreToSend = this.score.toString();
-            console.log('Попытка отправки счета:', scoreToSend);
+            const scoreData = `${this.nickname}:${this.score}`;
             
             try {
-                // Показываем сообщение
                 const gameOverMessage = document.createElement('div');
                 gameOverMessage.style.cssText = `
                     position: absolute;
@@ -401,50 +404,48 @@ class Game {
                 `;
                 gameOverMessage.innerHTML = `
                     Игра окончена!<br>
-                    Ваш счет: ${this.score}<br>
+                    ${this.nickname}, ваш счет: ${this.score}<br>
                 `;
                 document.body.appendChild(gameOverMessage);
                 
-                // Добавляем обработчик для кнопки
                 tg.MainButton.onClick(() => {
                     try {
-                        console.log('Отправка данных в бот:', scoreToSend);
-                        // Отправляем данные в бот
-                        tg.sendData(scoreToSend);
-                        console.log('Данные отправлены успешно');
+                        tg.sendData(scoreData);
+                        gameOverMessage.innerHTML += 'Результат отправлен!';
                         
-                        // Обновляем сообщение
-                        gameOverMessage.innerHTML = `
-                            Игра окончена!<br>
-                            Ваш счет: ${this.score}<br>
-                            Результат отправлен!
-                        `;
-                        
-                        // Закрываем WebApp через небольшую задержку
                         setTimeout(() => {
-                            console.log('Закрытие WebApp');
                             tg.close();
                         }, 1500);
                         
                     } catch (e) {
                         console.error('Ошибка при отправке результата:', e);
-                        gameOverMessage.innerHTML = `
-                            Игра окончена!<br>
-                            Ваш счет: ${this.score}<br>
-                            Ошибка при отправке результата
-                        `;
+                        gameOverMessage.innerHTML += 'Ошибка при отправке результата';
                     }
                 });
                 
-                // Показываем кнопку
                 tg.MainButton.show();
                 
             } catch (e) {
                 console.error('Ошибка при завершении игры:', e);
             }
-        } else {
-            console.error('Telegram WebApp не инициализирован');
         }
+    }
+    
+    showRegistration() {
+        const registration = document.getElementById('registration');
+        const nicknameInput = document.getElementById('nickname');
+        const submitButton = document.getElementById('submitNickname');
+        
+        registration.style.display = 'block';
+        
+        submitButton.onclick = () => {
+            const nickname = nicknameInput.value.trim();
+            if (nickname) {
+                this.nickname = nickname;
+                localStorage.setItem('nickname', nickname);
+                registration.style.display = 'none';
+            }
+        };
     }
 }
 
