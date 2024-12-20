@@ -391,14 +391,8 @@ class Game {
                 gameOverMessage.innerHTML = `
                     Игра окончена!<br>
                     Ваш счет: ${this.score}<br>
-                    Нажмите кнопку ниже, чтобы сохранить результат
                 `;
                 document.body.appendChild(gameOverMessage);
-                
-                // Настраиваем кнопку Telegram
-                tg.MainButton.setText('Сохранить результат');
-                tg.MainButton.color = '#2cab37';
-                tg.MainButton.textColor = '#ffffff';
                 
                 // Добавляем обработчик для кнопки
                 tg.MainButton.onClick(() => {
