@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимац��и
+        // Параметры анимации
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -403,8 +403,10 @@ class Game {
                 // Добавляем обработчик для кнопки
                 tg.MainButton.onClick(() => {
                     try {
+                        console.log('Отправка данных в бот:', scoreToSend);
                         // Отправляем данные в бот
                         tg.sendData(scoreToSend);
+                        console.log('Данные отправлены успешно');
                         
                         // Обновляем сообщение
                         gameOverMessage.innerHTML = `
@@ -415,6 +417,7 @@ class Game {
                         
                         // Закрываем WebApp через небольшую задержку
                         setTimeout(() => {
+                            console.log('Закрытие WebApp');
                             tg.close();
                         }, 1500);
                         
