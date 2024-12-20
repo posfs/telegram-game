@@ -33,7 +33,7 @@ class Game {
         this.explosions = [];
         this.score = 0;
         
-        // Параметры анимации
+        // Параметры анимац��и
         this.fireColors = ['#ff0000', '#ff6600', '#ffff00'];
         this.fireFrame = 0;
         
@@ -373,9 +373,15 @@ class Game {
             console.log('Отправка счета в Telegram:', scoreToSend);
             
             try {
-                // Отправляем данные напрямую
-                this.tg.sendData(scoreToSend);
-                console.log('Данные успешно отправлены');
+                // Добавляем обработчик для проверки успешной отправки
+                this.tg.onEvent('mainButtonClicked', () => {
+                    console.log('Отправка данных через MainButton');
+                    this.tg.sendData(scoreToSend);
+                });
+
+                // Настраиваем и показываем кнопку
+                this.tg.MainButton.setText('Сохранить результат: ' + scoreToSend);
+                this.tg.MainButton.show();
                 
                 // Показываем сообщение
                 const gameOverMessage = document.createElement('div');
@@ -391,13 +397,8 @@ class Game {
                     text-align: center;
                     z-index: 1000;
                 `;
-                gameOverMessage.innerHTML = `Игра окончена!<br>Ваш счет: ${this.score}`;
+                gameOverMessage.innerHTML = `Игра окончена!<br>Ваш счет: ${this.score}<br>Нажмите кнопку внизу, чтобы сохранить результат`;
                 document.body.appendChild(gameOverMessage);
-                
-                // Закрываем игру через небольшую задержку
-                setTimeout(() => {
-                    this.tg.close();
-                }, 1000);
                 
             } catch (e) {
                 console.error('Ошибка при отправке данных:', e);
